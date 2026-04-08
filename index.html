@@ -292,13 +292,26 @@
   .info-value { font-size:14px; font-weight:500; color:var(--text); text-align:right; }
 
   .price-big { font-family:'Rajdhani',sans-serif; font-size:34px; font-weight:700; color:var(--accent); line-height:1; }
+  .price-medium { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; color:var(--text); line-height:1; }
+  .price-medium.accent2 { color:var(--accent2); }
   .price-sub { font-size:11px; color:var(--text-dim); margin-top:3px; }
 
   .tag { display:inline-block; background:var(--surface3); border-radius:6px; padding:3px 10px; font-size:12px; font-weight:600; color:var(--text-muted); border:1px solid var(--border); }
   .tag.pro { background:rgba(245,166,35,.1); border-color:rgba(245,166,35,.3); color:var(--accent); }
   .tag.consumer { background:rgba(62,207,142,.1); border-color:rgba(62,207,142,.3); color:var(--green); }
 
-  .video-link-btn {
+  .vat-toggle {
+    display:none; align-items:center; gap:0;
+    border:1px solid var(--border); border-radius:8px; overflow:hidden; flex-shrink:0;
+  }
+  .vat-toggle.visible { display:flex; }
+  .vat-btn {
+    padding:5px 12px; font-size:12px; font-family:'Rajdhani',sans-serif; font-weight:600;
+    letter-spacing:1px; cursor:pointer; background:transparent; border:none;
+    color:var(--text-dim); transition:all .15s; white-space:nowrap;
+  }
+  .vat-btn.active { background:var(--accent); color:#000; }
+  .vat-btn:not(.active):hover { background:var(--surface2); color:var(--text); }
     display:flex; align-items:center; justify-content:center; gap:10px;
     width:100%; padding:12px;
     background:linear-gradient(135deg,rgba(245,166,35,.12),rgba(232,82,42,.08));
@@ -343,6 +356,10 @@
 <nav>
   <div class="logo" id="nav-logo">Fyrverkerindex</div>
   <div class="nav-right">
+    <div class="vat-toggle" id="vat-toggle">
+      <button class="vat-btn active" data-vat="inc">Inkl. moms</button>
+      <button class="vat-btn" data-vat="ex">Ex. moms</button>
+    </div>
     <span class="nav-count" id="nav-count"></span>
     <span class="nav-reload" id="nav-reload">↩ Byt fil</span>
   </div>
@@ -421,11 +438,43 @@
 
       <div class="product-right">
         <div class="info-card">
-          <div class="info-card-header">Pris</div>
-          <div class="info-row">
+          <div class="info-card-header" id="p-price-header">Pris</div>
+          <!-- Professional / Wholesale price (ex moms) -->
+          <div class="info-row" id="row-pro-price">
+            <div class="info-label" id="label-pro-price">Professional pris</div>
             <div>
-              <div class="price-big" id="p-price"></div>
-              <div class="price-sub">Utpris inkl. moms</div>
+              <div class="price-big" id="p-pro-price"></div>
+            </div>
+          </div>
+          <!-- Utpris (item price) -->
+          <div class="info-row">
+            <div class="info-label">Utpris</div>
+            <div>
+              <div class="price-medium" id="p-utpris"></div>
+              <div class="price-sub" id="p-utpris-sub">inkl. moms (25%)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kartong -->
+        <div class="info-card" id="card-carton">
+          <div class="info-card-header">Kartong</div>
+          <div class="info-row">
+            <div class="info-label">Antal i kartong</div>
+            <div class="info-value" id="p-pack"></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Pris per st (kartong)</div>
+            <div>
+              <div class="info-value" id="p-carton-unit"></div>
+              <div class="price-sub" id="p-carton-unit-sub" style="text-align:right">inkl. moms</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Hela kartongen</div>
+            <div>
+              <div class="price-medium accent2" id="p-carton-total"></div>
+              <div class="price-sub" id="p-carton-total-sub" style="text-align:right">inkl. moms</div>
             </div>
           </div>
         </div>
@@ -440,7 +489,7 @@
             <div class="info-label">CE-nummer</div>
             <div class="info-value" id="p-ce" style="font-size:12px;font-family:monospace;word-break:break-all"></div>
           </div>
-          <div class="info-row">
+          <div class="info-row" id="row-neq">
             <div class="info-label">NEQ per enhet</div>
             <div class="info-value" id="p-neq"></div>
           </div>
@@ -458,7 +507,7 @@
           </div>
         </div>
 
-        <div id="video-link-container"></div>
+        <div id="video-link-container" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -471,8 +520,23 @@
   let filteredProducts = [];
   let currentCategory = 'Alla';
   let searchQuery = '';
+  let showVAT = true; // true = inkl moms, false = ex moms
 
   const SHELL_CATS = new Set(['Shell', 'Shell 1s']);
+
+  // ── VAT toggle ──
+  document.querySelectorAll('.vat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showVAT = btn.dataset.vat === 'inc';
+      document.querySelectorAll('.vat-btn').forEach(b => b.classList.toggle('active', b.dataset.vat === (showVAT ? 'inc' : 'ex')));
+      // Re-render current view
+      if (document.getElementById('page-catalog').classList.contains('active')) renderGrid();
+      if (document.getElementById('page-product').classList.contains('active')) {
+        const idx = filteredProducts.findIndex(p => p === currentProduct);
+        if (idx >= 0) refreshProductPrices(filteredProducts[idx]);
+      }
+    });
+  });
 
   // ── Upload wiring ──
   const dropZone = document.getElementById('drop-zone');
@@ -505,8 +569,36 @@
       try {
         const wb = XLSX.read(ev.target.result, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
+
+        // Extract CE column as raw strings directly from worksheet cells
+        // This prevents SheetJS from coercing "0589-T2-0015" style codes into numbers
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        // Find header row (row 0) and CE column index
+        let ceColIdx = -1;
+        for (let c = range.s.c; c <= range.e.c; c++) {
+          const addr = XLSX.utils.encode_cell({ r: 0, c });
+          const cell = ws[addr];
+          if (cell && cell.v && String(cell.v).toLowerCase().includes('ce number')) {
+            ceColIdx = c; break;
+          }
+        }
+        // Build a map: rowIndex → raw CE string
+        const ceByRow = {};
+        if (ceColIdx >= 0) {
+          for (let r = range.s.r + 1; r <= range.e.r; r++) {
+            const addr = XLSX.utils.encode_cell({ r, c: ceColIdx });
+            const cell = ws[addr];
+            if (cell) {
+              // Always use the formatted text (w) if available, else raw value (v)
+              // dataIdx: sheet_to_json produces rows in order starting from 0
+              const dataIdx = r - range.s.r - 1;
+              ceByRow[dataIdx] = cell.w !== undefined ? String(cell.w).trim() : String(cell.v).trim();
+            }
+          }
+        }
+
         const data = XLSX.utils.sheet_to_json(ws, { defval: '' });
-        parseProducts(data);
+        parseProducts(data, ceByRow);
       } catch(e) {
         alert('Kunde inte läsa filen.'); showLoading(false);
       }
@@ -514,41 +606,68 @@
     reader.readAsArrayBuffer(file);
   }
 
-  function parseProducts(data) {
+  function parseProducts(data, ceByRow) {
     const keys = Object.keys(data[0] || {});
     const fk = (...terms) => keys.find(k => terms.some(t => k.toLowerCase().includes(t.toLowerCase()))) || '';
 
-    const kCat   = fk('Category','Kategori');
-    const kCal   = fk('Cal');
-    const kMfg   = fk('Mfg');
-    const kPid   = fk('Product ID','ProductID');
-    const kDesc  = fk('Description','Beskrivning');
-    const kPrice = fk('Item price','Item Price','Utpris');
-    const kVideo = fk('Video');
-    const kCE    = fk('CE number','CE');
-    const kNEQ   = fk('NEQ');
-    const kType  = fk('Pro/Consumer','Type','Typ');
+    const kCat        = fk('Category','Kategori');
+    const kCal        = fk('Cal');
+    const kMfg        = fk('Mfg');
+    const kPid        = fk('Product ID','ProductID');
+    const kDesc       = fk('Description','Beskrivning');
+    const kPack       = fk('Pack');
+    const kStock      = fk('Units In Stock','Stock','Lager');
+    const kItemPrice  = fk('Item price','Item Price');
+    // Professional price takes priority over Wholesale
+    const kProPrice   = fk('Professional Price','Wholesale Price');
+    const kCartonPrice= fk('Professional Carton Price','Wholesale Carton Price');
+    const kVideo      = fk('Video');
+    const kCE         = fk('CE number','CE');
+    const kNEQ        = fk('NEQ');
+    const kType       = fk('Pro/Consumer','Type','Typ');
 
-    allProducts = data.map((row,i) => ({
-      id: i,
-      category:  str(row[kCat]),
-      caliber:   str(row[kCal]),
-      mfg:       str(row[kMfg]),
-      productId: str(row[kPid]),
-      name:      str(row[kDesc]),
-      price:     row[kPrice] || 0,
-      video:     str(row[kVideo]),
-      ce:        str(row[kCE]),
-      neq:       str(row[kNEQ]),
-      type:      str(row[kType]),
-    })).filter(p => p.name && p.category);
+    const isPro = keys.some(k => k.toLowerCase().includes('professional price'));
+
+    // Read CE column directly from raw worksheet cells to avoid SheetJS type coercion
+    // Find CE column letter from header row
+
+    allProducts = data.map((row,i) => {
+      // CE: use pre-extracted raw string from worksheet, falling back to parsed value
+      const ceStr = (ceByRow && ceByRow[i] !== undefined) ? ceByRow[i] : str(row[kCE]);
+
+      return {
+        id: i,
+        isPro,
+        category:    str(row[kCat]),
+        caliber:     str(row[kCal]),
+        mfg:         str(row[kMfg]),
+        productId:   str(row[kPid]),
+        name:        str(row[kDesc]),
+        pack:        Number(row[kPack]) || 0,
+        stock:       str(row[kStock]),
+        itemPrice:   parseFloat(row[kItemPrice])   || 0,  // utpris ex. moms
+        proPrice:    parseFloat(row[kProPrice])    || 0,  // professional/wholesale ex. moms
+        cartonPrice: parseFloat(row[kCartonPrice]) || 0,  // carton ex. moms
+        video:       str(row[kVideo]),
+        ce:          ceStr,
+        neq:         str(row[kNEQ]),
+        type:        str(row[kType]),
+      };
+    }).filter(p => p.name && p.category);
 
     buildCatalog();
     showLoading(false);
     showPage('catalog');
-    document.getElementById('nav-count').textContent = allProducts.length + ' produkter';
+    const label = isPro ? 'Professional' : 'Wholesale';
+    document.getElementById('nav-count').textContent = allProducts.length + ' produkter · ' + label;
     document.getElementById('nav-reload').style.display = 'inline-block';
+    document.getElementById('vat-toggle').classList.add('visible');
   }
+
+  // 25% Swedish VAT
+  function incVAT(n) { return Math.round(n * 1.25); }
+  function fmtV(n) { return n > 0 ? fmt(showVAT ? incVAT(n) : n) : '—'; }
+  function vatLabel() { return showVAT ? 'inkl. moms' : 'ex. moms'; }
 
   // ── Catalog ──
   function calMM(c) { const m = String(c).match(/(\d+)/); return m ? +m[1] : 9999; }
@@ -620,8 +739,8 @@
     const sort = document.getElementById('sort-select').value;
     products = [...products];
     if      (sort === 'name')         products.sort((a,b) => a.name.localeCompare(b.name,'sv'));
-    else if (sort === 'price-asc')    products.sort((a,b) => +a.price - +b.price);
-    else if (sort === 'price-desc')   products.sort((a,b) => +b.price - +a.price);
+    else if (sort === 'price-asc')    products.sort((a,b) => (a.proPrice||a.itemPrice) - (b.proPrice||b.itemPrice));
+    else if (sort === 'price-desc')   products.sort((a,b) => (b.proPrice||b.itemPrice) - (a.proPrice||a.itemPrice));
     else if (sort === 'caliber-asc')  products.sort((a,b) => calMM(a.caliber) - calMM(b.caliber));
     else if (sort === 'caliber-desc') products.sort((a,b) => calMM(b.caliber) - calMM(a.caliber));
 
@@ -649,8 +768,11 @@
       return;
     }
     grid.innerHTML = filteredProducts.map((p, i) => {
-      const priceNum = parseFloat(p.price);
-      const priceStr = (!isNaN(priceNum) && priceNum > 0) ? fmt(priceNum) : '—';
+      const price = p.proPrice > 0 ? p.proPrice : p.itemPrice;
+      const priceStr = price > 0 ? fmtV(price) : '—';
+      const priceLabel = p.proPrice > 0
+        ? (p.isPro ? 'Professional pris' : 'Grossistpris') + ' ' + vatLabel()
+        : 'Utpris ' + vatLabel();
       const hasVideo = p.video && p.video !== 'nan' && p.video.trim() !== '';
       return `<div class="product-card" style="animation-delay:${Math.min(i*.025,.5)}s" data-idx="${i}">
         ${hasVideo ? '<div class="card-video-badge">▶ video</div>' : ''}
@@ -658,7 +780,7 @@
         <div class="card-name">${esc(p.name)}</div>
         <div class="card-details">
           <div>
-            <div class="card-price-label">Utpris</div>
+            <div class="card-price-label">${priceLabel}</div>
             <div class="card-price">${priceStr}</div>
           </div>
           <div class="card-caliber">${esc(p.caliber || '—')}</div>
@@ -671,22 +793,33 @@
   }
 
   // ── Product page ──
+  let currentProduct = null;
+
   function openProduct(idx) {
     const p = filteredProducts[idx];
     if (!p) return;
+    currentProduct = p;
 
     document.getElementById('product-badge').textContent     = p.category;
     document.getElementById('product-title').textContent     = p.name;
     document.getElementById('product-id-label').textContent  = p.productId ? 'Art.nr: ' + p.productId : '';
 
-    const priceNum = parseFloat(p.price);
-    document.getElementById('p-price').textContent = (!isNaN(priceNum) && priceNum > 0) ? fmt(priceNum) : '—';
-
+    // Specs (static — not price-dependent)
     document.getElementById('p-caliber').textContent = p.caliber || '—';
-    // CE number is an alphanumeric code — show exactly as stored
     document.getElementById('p-ce').textContent = (p.ce && p.ce !== 'nan') ? p.ce : '—';
-    document.getElementById('p-neq').textContent = (p.neq && p.neq !== 'nan') ? p.neq + ' g' : '—';
-    document.getElementById('p-mfg').textContent = p.mfg || '—';
+
+    // NEQ — hide row if missing
+    const neqRow = document.getElementById('row-neq');
+    if (neqRow) {
+      if (p.neq && p.neq !== 'nan' && p.neq !== '') {
+        neqRow.style.display = '';
+        document.getElementById('p-neq').textContent = p.neq + ' g';
+      } else {
+        neqRow.style.display = 'none';
+      }
+    }
+
+    document.getElementById('p-mfg').textContent = mfgName(p.mfg);
     document.getElementById('p-pid').textContent = p.productId || '—';
 
     const typeEl = document.getElementById('p-type');
@@ -695,12 +828,12 @@
       typeEl.innerHTML = `<span class="tag ${cls}">${esc(p.type)}</span>`;
     } else { typeEl.textContent = '—'; }
 
-    // Video — thumbnail that opens in new tab (avoids Error 153 from local file embedding)
+    refreshProductPrices(p);
+
+    // Video
     const vc  = document.getElementById('video-container');
     const vp  = document.getElementById('video-placeholder');
     const vlc = document.getElementById('video-link-container');
-
-    // Clear previous content
     vc.querySelectorAll('iframe,.video-thumb').forEach(el => el.remove());
     vp.style.display = 'flex';
     vlc.innerHTML = '';
@@ -709,52 +842,38 @@
     if (rawVid) {
       const ytMatch = rawVid.match(/(?:youtu\.be\/|[?&]v=)([a-zA-Z0-9_-]{11})/);
       const vmMatch = rawVid.match(/vimeo\.com\/(\d+)/);
-
       if (ytMatch) {
-        const ytId = ytMatch[1];
-        const thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
         vp.style.display = 'none';
         const a = document.createElement('a');
         a.href = rawVid; a.target = '_blank'; a.rel = 'noopener noreferrer';
         a.className = 'video-thumb';
-        a.innerHTML = `
-          <img src="${thumbUrl}" alt="Video thumbnail">
+        a.innerHTML = `<img src="https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg" alt="">
           <div class="video-thumb-overlay"></div>
-          <div class="video-thumb-play">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <div class="video-thumb-label">▶ Öppna på YouTube</div>
-        `;
+          <div class="video-thumb-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="video-thumb-label">▶ Öppna på YouTube</div>`;
         vc.appendChild(a);
       } else if (vmMatch) {
-        const vmId = vmMatch[1];
         vp.style.display = 'none';
         const a = document.createElement('a');
         a.href = rawVid; a.target = '_blank'; a.rel = 'noopener noreferrer';
         a.className = 'video-thumb no-thumb';
-        a.innerHTML = `
-          <div class="video-thumb-play">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-          <div class="video-thumb-label">▶ Öppna på Vimeo</div>
-        `;
+        a.innerHTML = `<div class="video-thumb-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="video-thumb-label">▶ Öppna på Vimeo</div>`;
         vc.appendChild(a);
-        // Try to load Vimeo thumbnail via oEmbed
-        fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vmId}&width=640`)
-          .then(r => r.json()).then(data => {
-            if (data.thumbnail_url) {
+        fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vmMatch[1]}&width=640`)
+          .then(r => r.json()).then(d => {
+            if (d.thumbnail_url) {
               a.classList.remove('no-thumb');
               const img = document.createElement('img');
-              img.src = data.thumbnail_url; img.alt = 'Video thumbnail';
+              img.src = d.thumbnail_url; img.alt = '';
               a.insertBefore(img, a.firstChild);
             }
-          }).catch(() => {});
+          }).catch(()=>{});
       }
-
       vlc.innerHTML = `<a class="video-link-btn" href="${rawVid}" target="_blank" rel="noopener noreferrer">🎬 Öppna video i ny flik</a>`;
     }
 
-    // Prev / Next — render nav before showing page
+    // Prev / Next
     const prev = idx > 0 ? filteredProducts[idx-1] : null;
     const next = idx < filteredProducts.length-1 ? filteredProducts[idx+1] : null;
     document.getElementById('product-nav').innerHTML = `
@@ -768,12 +887,80 @@
     showPage('product');
   }
 
+  function refreshProductPrices(p) {
+    // Pro price row
+    const rowPro   = document.getElementById('row-pro-price');
+    const labelPro = document.getElementById('label-pro-price');
+    if (p.proPrice > 0) {
+      rowPro.style.display = '';
+      labelPro.textContent = p.isPro ? 'Professional pris' : 'Grossistpris';
+      document.getElementById('p-pro-price').innerHTML =
+        `<span style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--accent);display:block">${fmt(incVAT(p.proPrice))} inkl. moms</span>` +
+        `<span style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:500;color:var(--text-muted);display:block;margin-top:2px">${fmt(p.proPrice)} ex. moms</span>`;
+    } else {
+      rowPro.style.display = 'none';
+    }
+
+    // Utpris
+    const utEl = document.getElementById('p-utpris');
+    const utSubEl = document.getElementById('p-utpris-sub');
+    if (p.itemPrice > 0) {
+      utEl.textContent = fmtV(p.itemPrice);
+      if (utSubEl) utSubEl.textContent = vatLabel();
+    } else {
+      utEl.textContent = '—';
+    }
+
+    // Carton
+    const cardCarton = document.getElementById('card-carton');
+    if (p.pack > 0 && p.cartonPrice > 0) {
+      cardCarton.style.display = '';
+      document.getElementById('p-pack').textContent = p.pack + ' st';
+      const unitEx = p.cartonPrice; // already per-unit ex moms
+      const totalEx = p.cartonPrice * p.pack;
+      document.getElementById('p-carton-unit').textContent = showVAT ? fmt(incVAT(unitEx)) : fmt(Math.round(unitEx));
+      document.getElementById('p-carton-unit-sub').textContent = vatLabel();
+      document.getElementById('p-carton-total').textContent = showVAT ? fmt(incVAT(totalEx)) : fmt(Math.round(totalEx));
+      document.getElementById('p-carton-total-sub').textContent = vatLabel();
+    } else if (p.pack > 0) {
+      cardCarton.style.display = '';
+      document.getElementById('p-pack').textContent = p.pack + ' st';
+      document.getElementById('p-carton-unit').textContent = '—';
+      document.getElementById('p-carton-total').textContent = '—';
+    } else {
+      cardCarton.style.display = 'none';
+    }
+  }
+
   // ── Search & Sort ──
   document.getElementById('search-input').addEventListener('input', e => { searchQuery = e.target.value; applyFilters(); });
   document.getElementById('sort-select').addEventListener('change', applyFilters);
   document.getElementById('back-btn').addEventListener('click', () => showPage('catalog'));
 
   // ── Helpers ──
+  const MFG = {
+    'A':'Art','AH':'Adam Hall','AP':'An Ping','BS':'Bo Saveros','BW':'Benwin',
+    'CO':'Cobra','DC':'Dancing','DV':'Del Vicario','E':'Liumei','EF':'Extreme',
+    'EU':'Europlá','F':'Fyrverkerimästarna','FP':'Festival',
+    'FS':'Chaos/FyrverkeriSpecialisten','FU':'Funke','GF':'GuanDu','GD':'GFF',
+    'GX':'Gangxing/Starlight','H':'Fakkelfabrikken','HP':'Hanssons Pyrotek',
+    'HX':'Hong Xin','Ha':'Hammargrens','JJ':'Jiangsu Jianhu','JP':'Jin Ping',
+    'JY':'Jin Yi','KF':'Kingdom','KK':'Kalenkari','L':'Linders','LD':'Lidu',
+    'LM':'Le Maitre','LO':'Lieto','LP':'Luso','LT':'Lunatec','MA':'Martarello',
+    'MB':'Meta Pyro','MC':'Miracle','MF':'MagicFx','MR':'Martí','MS':'Master',
+    'MT':'Meitai','ND':'Nordic Display','NE':'NextFx','NL':'Nammo Liab',
+    'NY':'New Year','P':'Panda','PA':'Peng An','PC':'PSC','PE':'Pyro Event',
+    'PG':'Pyro Genie','PS':'PyroSky','PZ':'Panzera','Pi':'Pirico/Parente',
+    'QD':'Qing Dian/Celebration','RC':'Ricasa','RES':'RES','SI':'Sicon',
+    'SK':'Småland Krutbruk','ST':'San Tai','SW':'Showven','TE':'Tesa',
+    'TF':'Tanghua/Tang Flower','UT':'Ultratec','V':'Vulcan',
+    'Va':'Vacalluzo/Hamex','W':'Weco','WA':'Wano','WE':'Wells','WH':'Waihe',
+    'WN':'Wenchi','XX':'Xiangxing','YF':'Yung Feng','YY':'Yuan Yang',
+  };
+  function mfgName(prefix) {
+    if (!prefix || prefix === 'nan') return '—';
+    return MFG[prefix] ? MFG[prefix] : prefix;
+  }
   function fmt(n) { return n.toLocaleString('sv-SE') + ' kr'; }
   function str(v) { return String(v || '').trim(); }
   function esc(s) {
