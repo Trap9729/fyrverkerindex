@@ -312,6 +312,7 @@
   }
   .vat-btn.active { background:var(--accent); color:#000; }
   .vat-btn:not(.active):hover { background:var(--surface2); color:var(--text); }
+  .video-link-btn {
     display:flex; align-items:center; justify-content:center; gap:10px;
     width:100%; padding:12px;
     background:linear-gradient(135deg,rgba(245,166,35,.12),rgba(232,82,42,.08));
@@ -320,6 +321,88 @@
     letter-spacing:1px; cursor:pointer; text-decoration:none; transition:background .2s,box-shadow .2s;
   }
   .video-link-btn:hover { background:rgba(245,166,35,.2); box-shadow:0 4px 16px rgba(245,166,35,.2); }
+
+  /* CART */
+  .nav-cart {
+    display:none; align-items:center; gap:8px; cursor:pointer; user-select:none;
+    padding:6px 14px; border:1px solid var(--border); border-radius:8px;
+    font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600; letter-spacing:1px;
+    color:var(--text); transition:all .2s;
+  }
+  .nav-cart.visible { display:inline-flex; }
+  .nav-cart:hover { border-color:var(--accent); color:var(--accent); }
+  .cart-badge {
+    background:var(--accent); color:#000; border-radius:20px; min-width:20px;
+    padding:1px 7px; font-size:12px; text-align:center;
+  }
+  .cart-badge.empty { background:var(--surface3); color:var(--text-dim); }
+
+  .btn-add {
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none;
+    border-radius:8px; padding:7px 12px; cursor:pointer; white-space:nowrap;
+    font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px;
+    transition:transform .15s, box-shadow .15s;
+  }
+  .btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(245,166,35,.3); }
+  .btn-add.added { background:var(--green); color:#000; }
+  .card-actions { display:flex; align-items:center; gap:8px; margin-top:12px; }
+  .card-actions .qty { flex-shrink:0; }
+  .card-actions .btn-add { flex:1; }
+
+  .qty { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface2); }
+  .qty button {
+    width:30px; height:32px; background:transparent; border:none; color:var(--text);
+    font-size:16px; cursor:pointer; transition:background .15s;
+  }
+  .qty button:hover { background:var(--surface3); color:var(--accent); }
+  .qty input {
+    width:44px; height:32px; text-align:center; background:transparent; border:none;
+    border-left:1px solid var(--border); border-right:1px solid var(--border);
+    color:var(--text); font-size:13px; outline:none; -moz-appearance:textfield;
+  }
+  .qty input::-webkit-outer-spin-button, .qty input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+
+  .product-add { display:flex; gap:10px; align-items:center; margin-bottom:14px; }
+  .product-add .btn-add { flex:1; padding:11px; font-size:15px; }
+
+  #page-cart { min-height:calc(100vh - 56px); padding:32px 36px; max-width:1100px; margin:0 auto; }
+  .cart-title { font-family:'Rajdhani',sans-serif; font-size:30px; font-weight:700; letter-spacing:1px; margin-bottom:20px; }
+  .cart-table { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .cart-table th {
+    background:var(--surface2); text-align:left; padding:11px 14px;
+    font-family:'Rajdhani',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted);
+  }
+  .cart-table td { padding:12px 14px; border-top:1px solid rgba(42,48,80,.6); vertical-align:middle; font-size:14px; }
+  .cart-table .num { text-align:right; white-space:nowrap; }
+  .cart-name { font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:600; cursor:pointer; }
+  .cart-name:hover { color:var(--accent); }
+  .cart-art { font-family:monospace; font-size:12px; color:var(--text-muted); }
+  .cart-remove {
+    background:transparent; border:1px solid var(--border); color:var(--text-muted);
+    border-radius:8px; width:32px; height:32px; cursor:pointer; transition:all .15s;
+  }
+  .cart-remove:hover { color:#fff; background:var(--accent2); border-color:var(--accent2); }
+  .cart-summary {
+    margin-top:18px; display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;
+  }
+  .cart-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-secondary {
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:10px 18px; cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600; letter-spacing:1px; transition:all .2s;
+  }
+  .btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-secondary.danger:hover { border-color:var(--accent2); color:var(--accent2); }
+  .cart-actions .btn-add { padding:10px 20px; font-size:14px; }
+  .cart-totals { text-align:right; }
+  .cart-totals .t-label { font-size:12px; color:var(--text-muted); }
+  .cart-totals .t-big { font-family:'Rajdhani',sans-serif; font-size:32px; font-weight:700; color:var(--accent); line-height:1.1; }
+  .cart-empty { text-align:center; color:var(--text-muted); padding:60px 20px; background:var(--surface); border:1px dashed var(--border); border-radius:12px; }
+  @media (max-width:640px) {
+    #page-cart { padding:20px 12px; }
+    .cart-table th.hide-m, .cart-table td.hide-m { display:none; }
+    .cart-table td, .cart-table th { padding:10px 8px; }
+  }
 
   /* LOADING */
   #loading-overlay {
@@ -361,6 +444,7 @@
       <button class="vat-btn" data-vat="ex">Ex. moms</button>
     </div>
     <span class="nav-count" id="nav-count"></span>
+    <div class="nav-cart" id="nav-cart">🛒 Varukorg <span class="cart-badge empty" id="cart-badge">0</span></div>
     <span class="nav-reload" id="nav-reload">↩ Byt fil</span>
   </div>
 </nav>
@@ -437,6 +521,14 @@
       </div>
 
       <div class="product-right">
+        <div class="product-add">
+          <div class="qty" id="pdp-qty">
+            <button type="button" data-d="-1">−</button>
+            <input type="number" min="1" value="1" id="pdp-qty-input">
+            <button type="button" data-d="1">+</button>
+          </div>
+          <button class="btn-add" id="pdp-add">🛒 Lägg i varukorg</button>
+        </div>
         <div class="info-card">
           <div class="info-card-header" id="p-price-header">Pris</div>
           <!-- Professional / Wholesale price (ex moms) -->
@@ -512,6 +604,13 @@
     </div>
   </div>
 
+  <!-- CART -->
+  <div id="page-cart" class="page">
+    <div class="back-btn" id="cart-back-btn">← Fortsätt handla</div>
+    <div class="cart-title">Varukorg</div>
+    <div id="cart-content"></div>
+  </div>
+
 </div>
 
 <script>
@@ -531,6 +630,7 @@
       document.querySelectorAll('.vat-btn').forEach(b => b.classList.toggle('active', b.dataset.vat === (showVAT ? 'inc' : 'ex')));
       // Re-render current view
       if (document.getElementById('page-catalog').classList.contains('active')) renderGrid();
+      if (document.getElementById('page-cart').classList.contains('active')) renderCart();
       if (document.getElementById('page-product').classList.contains('active')) {
         const idx = filteredProducts.findIndex(p => p === currentProduct);
         if (idx >= 0) refreshProductPrices(filteredProducts[idx]);
@@ -557,6 +657,7 @@
     allProducts = []; filteredProducts = []; currentCategory = 'Alla'; searchQuery = '';
     document.getElementById('nav-count').textContent = '';
     document.getElementById('nav-reload').style.display = 'none';
+    document.getElementById('nav-cart').classList.remove('visible');
     fileInput.value = '';
     showPage('upload');
   });
@@ -662,6 +763,8 @@
     document.getElementById('nav-count').textContent = allProducts.length + ' produkter · ' + label;
     document.getElementById('nav-reload').style.display = 'inline-block';
     document.getElementById('vat-toggle').classList.add('visible');
+    document.getElementById('nav-cart').classList.add('visible');
+    updateCartBadge();
   }
 
   // 25% Swedish VAT
@@ -785,10 +888,29 @@
           </div>
           <div class="card-caliber">${esc(p.caliber || '—')}</div>
         </div>
+        <div class="card-actions">
+          <div class="qty">
+            <button type="button" data-d="-1">−</button>
+            <input type="number" min="1" value="1" class="card-qty">
+            <button type="button" data-d="1">+</button>
+          </div>
+          <button class="btn-add" type="button">🛒 Lägg till</button>
+        </div>
       </div>`;
     }).join('');
     grid.querySelectorAll('.product-card').forEach(el => {
       el.addEventListener('click', () => openProduct(+el.dataset.idx));
+      const input = el.querySelector('.card-qty');
+      const addBtn = el.querySelector('.btn-add');
+      el.querySelector('.card-actions').addEventListener('click', e => e.stopPropagation());
+      el.querySelectorAll('.qty button').forEach(b => b.addEventListener('click', () => {
+        input.value = Math.max(1, (parseInt(input.value) || 1) + +b.dataset.d);
+      }));
+      addBtn.addEventListener('click', () => {
+        addToCart(filteredProducts[+el.dataset.idx], parseInt(input.value) || 1);
+        flashAdded(addBtn, '🛒 Lägg till');
+        input.value = 1;
+      });
     });
   }
 
@@ -799,6 +921,7 @@
     const p = filteredProducts[idx];
     if (!p) return;
     currentProduct = p;
+    pdpQty.value = 1;
 
     document.getElementById('product-badge').textContent     = p.category;
     document.getElementById('product-title').textContent     = p.name;
@@ -936,6 +1059,153 @@
   document.getElementById('search-input').addEventListener('input', e => { searchQuery = e.target.value; applyFilters(); });
   document.getElementById('sort-select').addEventListener('change', applyFilters);
   document.getElementById('back-btn').addEventListener('click', () => showPage('catalog'));
+
+  // ── Varukorg ──
+  const CART_KEY = 'fyrverkerindex_cart_v1';
+  let cart = {}; // nyckel (art.nr eller namn) -> antal
+  try { cart = JSON.parse(localStorage.getItem(CART_KEY)) || {}; } catch(e) { cart = {}; }
+
+  function saveCart() { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch(e) {} }
+  function pKey(p) { return p.productId || p.name; }
+  function unitExVat(p) { return p.proPrice > 0 ? p.proPrice : p.itemPrice; }
+  function unitShown(p) { const u = unitExVat(p); return showVAT ? incVAT(u) : u; }
+
+  // Produkter i korgen som finns i den inlästa filen
+  function cartItems() {
+    const byKey = new Map();
+    allProducts.forEach(p => { if (!byKey.has(pKey(p))) byKey.set(pKey(p), p); });
+    return Object.keys(cart).filter(k => byKey.has(k) && cart[k] > 0).map(k => ({ p: byKey.get(k), qty: cart[k] }));
+  }
+
+  function addToCart(p, qty) {
+    if (!p) return;
+    const k = pKey(p);
+    cart[k] = (cart[k] || 0) + Math.max(1, qty|0);
+    saveCart(); updateCartBadge();
+  }
+  function setQty(k, qty) {
+    if (qty <= 0) delete cart[k]; else cart[k] = qty;
+    saveCart(); updateCartBadge(); renderCart();
+  }
+  function updateCartBadge() {
+    const n = cartItems().reduce((s, i) => s + i.qty, 0);
+    const b = document.getElementById('cart-badge');
+    b.textContent = n; b.classList.toggle('empty', n === 0);
+  }
+  function flashAdded(btn, label) {
+    btn.classList.add('added'); btn.textContent = '✓ Tillagd';
+    setTimeout(() => { btn.classList.remove('added'); btn.textContent = label; }, 900);
+  }
+
+  function renderCart() {
+    const box = document.getElementById('cart-content');
+    const items = cartItems();
+    if (!items.length) {
+      box.innerHTML = `<div class="cart-empty"><div style="font-size:40px;margin-bottom:10px">🛒</div>Varukorgen är tom</div>`;
+      return;
+    }
+    let total = 0, totalEx = 0, units = 0;
+    const rows = items.map(({p, qty}) => {
+      const unit = unitShown(p);
+      total += unit * qty; totalEx += unitExVat(p) * qty; units += qty;
+      const k = esc(pKey(p));
+      return `<tr data-k="${k}">
+        <td class="cart-art">${esc(p.productId || '—')}</td>
+        <td><div class="cart-name" data-open="${k}">${esc(p.name)}</div><div class="card-category" style="margin:2px 0 0">${esc(p.category)}</div></td>
+        <td class="num hide-m">${unit > 0 ? fmt(unit) : '—'}</td>
+        <td class="num"><div class="qty">
+          <button type="button" data-d="-1">−</button>
+          <input type="number" min="1" value="${qty}">
+          <button type="button" data-d="1">+</button>
+        </div></td>
+        <td class="num"><strong>${unit > 0 ? fmt(unit * qty) : '—'}</strong></td>
+        <td class="num"><button class="cart-remove" title="Ta bort" data-rm="1">✕</button></td>
+      </tr>`;
+    }).join('');
+
+    box.innerHTML = `
+      <table class="cart-table">
+        <thead><tr>
+          <th>Art.nr</th><th>Artikel</th><th class="num hide-m">À-pris ${vatLabel()}</th>
+          <th class="num">Antal</th><th class="num">Summa</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="cart-summary">
+        <div class="cart-actions">
+          <button class="btn-add" id="cart-export-xlsx">⬇ Exportera Excel</button>
+          <button class="btn-secondary" id="cart-export-csv">⬇ CSV</button>
+          <button class="btn-secondary" id="cart-copy">📋 Kopiera lista</button>
+          <button class="btn-secondary danger" id="cart-clear">Töm varukorgen</button>
+        </div>
+        <div class="cart-totals">
+          <div class="t-label">${items.length} artiklar · ${units} st · totalt ${vatLabel()}</div>
+          <div class="t-big">${fmt(total)}</div>
+          ${showVAT ? `<div class="t-label">${fmt(totalEx)} ex. moms</div>` : ''}
+        </div>
+      </div>`;
+
+    box.querySelectorAll('tbody tr').forEach(tr => {
+      const k = tr.dataset.k;
+      const input = tr.querySelector('input');
+      tr.querySelectorAll('.qty button').forEach(b => b.addEventListener('click', () => setQty(k, (cart[k] || 0) + +b.dataset.d)));
+      input.addEventListener('change', () => setQty(k, parseInt(input.value) || 0));
+      tr.querySelector('[data-rm]').addEventListener('click', () => setQty(k, 0));
+      tr.querySelector('[data-open]').addEventListener('click', () => {
+        const idx = filteredProducts.findIndex(p => pKey(p) === k);
+        if (idx >= 0) openProduct(idx);
+        else { currentCategory = 'Alla'; searchQuery = ''; document.getElementById('search-input').value = '';
+               applyFilters(); const i2 = filteredProducts.findIndex(p => pKey(p) === k); if (i2 >= 0) openProduct(i2); }
+      });
+    });
+    document.getElementById('cart-clear').addEventListener('click', () => {
+      if (confirm('Tömma hela varukorgen?')) { cart = {}; saveCart(); updateCartBadge(); renderCart(); }
+    });
+    document.getElementById('cart-export-xlsx').addEventListener('click', exportXlsx);
+    document.getElementById('cart-export-csv').addEventListener('click', exportCsv);
+    document.getElementById('cart-copy').addEventListener('click', e => copyList(e.currentTarget));
+  }
+
+  // Exportlista: antal, artikelnummer, namn
+  function exportRows() { return cartItems().map(({p, qty}) => [qty, p.productId, p.name]); }
+  function fileStamp() { return new Date().toISOString().slice(0, 10); }
+
+  function exportXlsx() {
+    const ws = XLSX.utils.aoa_to_sheet([['Antal', 'Artikelnummer', 'Namn'], ...exportRows()]);
+    ws['!cols'] = [{ wch: 8 }, { wch: 16 }, { wch: 50 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Varukorg');
+    XLSX.writeFile(wb, 'varukorg_' + fileStamp() + '.xlsx');
+  }
+  function exportCsv() {
+    const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+    const csv = [['Antal', 'Artikelnummer', 'Namn'], ...exportRows()].map(r => r.map(q).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'varukorg_' + fileStamp() + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  function copyList(btn) {
+    const text = exportRows().map(r => r.join('\t')).join('\n');
+    const done = () => { const o = btn.textContent; btn.textContent = '✓ Kopierad'; setTimeout(() => btn.textContent = o, 1200); };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => alert('Kunde inte kopiera.'));
+    else alert('Kopiering stöds inte i webbläsaren.');
+  }
+
+  document.getElementById('nav-cart').addEventListener('click', () => { renderCart(); showPage('cart'); });
+  document.getElementById('cart-back-btn').addEventListener('click', () => showPage('catalog'));
+
+  // Produktsidans antal + lägg till
+  const pdpQty = document.getElementById('pdp-qty-input');
+  document.querySelectorAll('#pdp-qty button').forEach(b => b.addEventListener('click', () => {
+    pdpQty.value = Math.max(1, (parseInt(pdpQty.value) || 1) + +b.dataset.d);
+  }));
+  document.getElementById('pdp-add').addEventListener('click', e => {
+    addToCart(currentProduct, parseInt(pdpQty.value) || 1);
+    flashAdded(e.currentTarget, '🛒 Lägg i varukorg');
+    pdpQty.value = 1;
+  });
 
   // ── Helpers ──
   const MFG = {
